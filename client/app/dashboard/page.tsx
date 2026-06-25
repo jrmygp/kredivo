@@ -253,7 +253,7 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
                       <div
                         ref={provided.innerRef}
                         {...provided.droppableProps}
-                        className={`min-h-[28rem] rounded-lg border p-3 transition ${
+                        className={`min-h-112 rounded-lg border p-3 transition ${
                           snapshot.isDraggingOver ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"
                         }`}
                       >
