@@ -79,6 +79,6 @@ func (s *taskService) Update(userID string, id int64, taskForm dto.UpdateTaskReq
 	return s.repository.Update(task)
 }
 
-func (s *taskService) Delete(userID string, id int64) error {
+func (s *taskService) Delete(userID string, id int64) (model.Task, error) {
 	return s.repository.Delete(userID, id)
 }

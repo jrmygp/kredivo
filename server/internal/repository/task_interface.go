@@ -7,5 +7,5 @@ type TaskRepository interface {
 	FindByID(userID string, id int64) (model.Task, error)
 	Create(task model.Task) (model.Task, error)
 	Update(task model.Task) (model.Task, error)
-	Delete(userID string, id int64) error
+	Delete(userID string, id int64) (model.Task, error)
 }

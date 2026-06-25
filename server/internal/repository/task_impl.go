@@ -96,15 +96,15 @@ func (r *taskRepository) Update(task model.Task) (model.Task, error) {
 	return task, nil
 }
 
-func (r *taskRepository) Delete(userID string, id int64) error {
+func (r *taskRepository) Delete(userID string, id int64) (model.Task, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	task, ok := r.tasks[id]
 	if !ok || task.UserID != userID {
-		return ErrTaskNotFound
+		return model.Task{}, ErrTaskNotFound
 	}
 
 	delete(r.tasks, id)
-	return nil
+	return task, nil
 }

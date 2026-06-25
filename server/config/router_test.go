@@ -62,8 +62,21 @@ func TestTaskFlow(t *testing.T) {
 	}
 
 	deleteResp := doJSON(router, http.MethodDelete, "/api/tasks/1", "", true)
-	if deleteResp.Code != http.StatusNoContent {
-		t.Fatalf("delete status = %d, want %d", deleteResp.Code, http.StatusNoContent)
+	if deleteResp.Code != http.StatusOK {
+		t.Fatalf("delete status = %d, want %d", deleteResp.Code, http.StatusOK)
+	}
+
+	var deleted struct {
+		Data struct {
+			ID     int64  `json:"id"`
+			Status string `json:"status"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(deleteResp.Body.Bytes(), &deleted); err != nil {
+		t.Fatalf("decode delete response: %v", err)
+	}
+	if deleted.Data.ID != 1 || deleted.Data.Status != "completed" {
+		t.Fatalf("unexpected deleted task: %+v", deleted.Data)
 	}
 }
 

@@ -144,7 +144,7 @@ func (h *TaskController) Delete(c *gin.Context) {
 		return
 	}
 
-	err := h.service.Delete(userIDFromContext(c), ID)
+	task, err := h.service.Delete(userIDFromContext(c), ID)
 	if errors.Is(err, repository.ErrTaskNotFound) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": "task not found",
@@ -158,7 +158,13 @@ func (h *TaskController) Delete(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	webResponse := dto.Response{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   convertTaskResponse(task),
+	}
+
+	c.JSON(http.StatusOK, webResponse)
 }
 
 func userIDFromContext(c *gin.Context) string {
