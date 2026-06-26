@@ -130,41 +130,6 @@ func TestTaskFindAllSorting(t *testing.T) {
 	}
 }
 
-func TestTaskFindAllSortingBySubTasksCount(t *testing.T) {
-	router := testRouter()
-
-	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"No sub task"}`, true)
-	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"Two sub tasks"}`, true)
-	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"One sub task"}`, true)
-
-	doJSON(router, http.MethodPost, "/api/tasks/2/sub-tasks", `{"title":"First"}`, true)
-	doJSON(router, http.MethodPost, "/api/tasks/2/sub-tasks", `{"title":"Second"}`, true)
-	doJSON(router, http.MethodPost, "/api/tasks/3/sub-tasks", `{"title":"Only"}`, true)
-
-	listResp := doJSON(router, http.MethodGet, "/api/tasks?sortBy=subTasksCount&sortOrder=desc", "", true)
-	if listResp.Code != http.StatusOK {
-		t.Fatalf("list status = %d, want %d; body = %s", listResp.Code, http.StatusOK, listResp.Body.String())
-	}
-
-	var listed struct {
-		Data []struct {
-			Title         string `json:"title"`
-			SubTasksCount int    `json:"subTasksCount"`
-		} `json:"data"`
-	}
-	if err := json.Unmarshal(listResp.Body.Bytes(), &listed); err != nil {
-		t.Fatalf("decode list response: %v", err)
-	}
-
-	got := []int{listed.Data[0].SubTasksCount, listed.Data[1].SubTasksCount, listed.Data[2].SubTasksCount}
-	want := []int{2, 1, 0}
-	for index := range want {
-		if got[index] != want[index] {
-			t.Fatalf("unexpected sub-task count sort order: got %+v, want %+v", got, want)
-		}
-	}
-}
-
 func TestSubTaskFlow(t *testing.T) {
 	router := testRouter()
 
@@ -225,14 +190,13 @@ func TestSubTaskFlow(t *testing.T) {
 	}
 	var listedTasks struct {
 		Data []struct {
-			ID            int64 `json:"id"`
-			SubTasksCount int   `json:"subTasksCount"`
+			ID int64 `json:"id"`
 		} `json:"data"`
 	}
 	if err := json.Unmarshal(listTasksResp.Body.Bytes(), &listedTasks); err != nil {
 		t.Fatalf("decode list task response: %v", err)
 	}
-	if len(listedTasks.Data) != 1 || listedTasks.Data[0].ID != 1 || listedTasks.Data[0].SubTasksCount != 2 {
+	if len(listedTasks.Data) != 1 || listedTasks.Data[0].ID != 1 {
 		t.Fatalf("unexpected task sub-task count: %+v", listedTasks.Data)
 	}
 

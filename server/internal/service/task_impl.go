@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"slices"
 	"strings"
 
 	"task-management-server/internal/dto"
@@ -39,7 +38,7 @@ func (s *taskService) FindAll(userID, status, searchQuery, sortBy, sortOrder str
 	if sortBy == "" {
 		sortBy = "created"
 	}
-	if sortBy != "title" && sortBy != "status" && sortBy != "created" && sortBy != "subTasksCount" {
+	if sortBy != "title" && sortBy != "status" && sortBy != "created" {
 		return nil, 0, 0, 0, 0, ErrInvalidTaskSort
 	}
 
@@ -57,37 +56,6 @@ func (s *taskService) FindAll(userID, status, searchQuery, sortBy, sortOrder str
 
 	pageSize := 5
 	offset := (page - 1) * pageSize
-
-	if sortBy == "subTasksCount" {
-		tasks, err := s.repository.FindAllFiltered(userID, status, searchQuery)
-		if err != nil {
-			return nil, 0, 0, 0, 0, err
-		}
-
-		taskIDs := make([]int64, 0, len(tasks))
-		for _, task := range tasks {
-			taskIDs = append(taskIDs, task.ID)
-		}
-		subTaskCounts := s.CountSubTasksByTaskIDs(userID, taskIDs)
-
-		slices.SortFunc(tasks, func(a, b model.Task) int {
-			result := subTaskCounts[a.ID] - subTaskCounts[b.ID]
-			if result == 0 {
-				if a.ID < b.ID {
-					result = -1
-				} else if a.ID > b.ID {
-					result = 1
-				}
-			}
-			if sortOrder == "desc" {
-				return -result
-			}
-			return result
-		})
-
-		paginatedTasks, totalCount, firstRow, lastRow, totalPages := paginateTasks(tasks, offset, pageSize)
-		return paginatedTasks, totalCount, firstRow, lastRow, totalPages, nil
-	}
 
 	tasks, totalCount, err := s.repository.FindAll(userID, status, searchQuery, sortBy, sortOrder, offset, pageSize)
 	if err != nil {

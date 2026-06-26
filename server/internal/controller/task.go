@@ -33,7 +33,6 @@ func convertTaskResponse(o model.Task) dto.TaskResponse {
 
 func convertTaskResponseWithSubTaskCount(o model.Task, subTasks int) dto.TaskResponse {
 	response := convertTaskResponse(o)
-	response.SubTasksCount = subTasks
 	return response
 }
 
@@ -63,7 +62,7 @@ func (h *TaskController) FindAll(c *gin.Context) {
 	}
 	if errors.Is(err, service.ErrInvalidTaskSort) {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "sortBy must be title, status, created, or subTasksCount and sortOrder must be asc or desc",
+			"error": "sortBy must be title, status, or created and sortOrder must be asc or desc",
 		})
 		return
 	}

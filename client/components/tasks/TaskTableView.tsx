@@ -100,7 +100,6 @@ export default function TaskTableView({
   const sortableColumns: Array<{ key: TaskSortBy; label: string }> = [
     { key: "title", label: "Task" },
     { key: "status", label: "Status" },
-    { key: "subTasksCount", label: "Sub-Tasks" },
   ];
   const createdSortOrder = sortDirections.created;
   const CreatedSortIcon = createdSortOrder === "asc" ? MdArrowUpward : MdArrowDownward;
@@ -127,7 +126,7 @@ export default function TaskTableView({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[42rem] border-collapse text-left text-sm">
+        <table className="w-full min-w-2xl border-collapse text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
             <tr>
               {sortableColumns.map((column) => {
@@ -180,7 +179,6 @@ export default function TaskTableView({
                     {task.status.at(0)?.toUpperCase() + task.status.slice(1)}
                   </span>
                 </td>
-                <td className="px-4 py-4 text-slate-500">{task.subTasksCount}</td>
                 <td className="px-4 py-4 text-slate-500">{new Date(task.created_at).toLocaleDateString("id-ID")}</td>
                 <td className="px-4 py-4">
                   <div className="flex justify-end gap-2">

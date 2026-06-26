@@ -38,12 +38,11 @@ type UpdateSubTaskRequest struct {
 }
 
 type TaskResponse struct {
-	ID            int64     `json:"id"`
-	Title         string    `json:"title"`
-	Status        string    `json:"status"`
-	SubTasksCount int       `json:"subTasksCount"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID        int64     `json:"id"`
+	Title     string    `json:"title"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type SubTaskResponse struct {

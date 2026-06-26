@@ -32,7 +32,6 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
   const [sortDirections, setSortDirections] = useState<Record<TaskSortBy, TaskSortOrder>>({
     title: "asc",
     status: "asc",
-    subTasksCount: "asc",
     created: "desc",
   });
   const [modalMode, setModalMode] = useState<"add" | "edit" | null>(null);
