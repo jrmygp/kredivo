@@ -31,7 +31,7 @@ func convertTaskResponse(o model.Task) dto.TaskResponse {
 	}
 }
 
-func convertTaskResponseWithSubTaskCount(o model.Task, subTasks int) dto.TaskResponse {
+func convertTaskResponseWithSubTaskCount(o model.Task) dto.TaskResponse {
 	response := convertTaskResponse(o)
 	return response
 }
@@ -77,11 +77,10 @@ func (h *TaskController) FindAll(c *gin.Context) {
 	for _, task := range tasks {
 		taskIDs = append(taskIDs, task.ID)
 	}
-	subTaskCounts := h.service.CountSubTasksByTaskIDs(userIDFromContext(c), taskIDs)
 
 	taskResponses := make([]dto.TaskResponse, 0, len(tasks))
 	for _, task := range tasks {
-		taskResponses = append(taskResponses, convertTaskResponseWithSubTaskCount(task, subTaskCounts[task.ID]))
+		taskResponses = append(taskResponses, convertTaskResponseWithSubTaskCount(task))
 	}
 
 	webResponse := dto.PaginationResponse{
