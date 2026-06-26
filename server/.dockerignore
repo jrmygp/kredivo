@@ -1,0 +1,8 @@
+tmp
+bin
+coverage
+.env
+.env*
+Dockerfile
+.dockerignore
+*.test
