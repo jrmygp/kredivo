@@ -49,25 +49,7 @@ const LoginPage = ({ handleSetUser, user }: LoginPageProps) => {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-10 text-slate-900 sm:px-6 lg:px-8">
-      <section className="grid w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-xl shadow-slate-200/80 md:grid-cols-[1fr_1.1fr]">
-        <div className="hidden bg-slate-950 p-10 text-white md:flex md:flex-col md:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-300">Workspace</p>
-            <h1 className="mt-6 max-w-sm text-4xl font-bold leading-tight">
-              Fokus pada hal penting, lanjutkan dari tempat terakhir.
-            </h1>
-            <p className="mt-4 max-w-sm text-sm leading-6 text-slate-300">
-              Masuk untuk membuka ruang kerja, melihat prioritas, dan menyelesaikan pekerjaan dengan lebih tenang.
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-white/10 bg-white/5 p-5">
-            <p className="text-sm font-medium text-slate-200">
-              Satu tempat untuk menjaga alur kerja tetap jelas, rapi, dan mudah ditindaklanjuti.
-            </p>
-          </div>
-        </div>
-
+      <section className="grid w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-xl shadow-slate-200/80">
         <div className="px-6 py-8 sm:px-10 sm:py-12">
           <div className="mx-auto w-full max-w-md">
             <div className="md:hidden">
@@ -76,10 +58,8 @@ const LoginPage = ({ handleSetUser, user }: LoginPageProps) => {
             </div>
 
             <div className="hidden md:block">
-              <h2 className="text-3xl font-bold">Selamat datang kembali</h2>
-              <p className="mt-2 text-sm text-slate-500">
-                Masuk untuk melanjutkan pekerjaanmu dengan lebih terarah.
-              </p>
+              <h2 className="text-3xl font-bold">Welcome back</h2>
+              <p className="mt-2 text-sm text-slate-500">Log in to manage your tasks</p>
             </div>
 
             <form className="mt-8 space-y-5" onSubmit={formik.handleSubmit}>
@@ -89,7 +69,7 @@ const LoginPage = ({ handleSetUser, user }: LoginPageProps) => {
                 name="username"
                 type="text"
                 autoComplete="username"
-                placeholder="Masukkan username"
+                placeholder="Input username"
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.username}
@@ -102,32 +82,15 @@ const LoginPage = ({ handleSetUser, user }: LoginPageProps) => {
                 name="password"
                 type="password"
                 autoComplete="current-password"
-                placeholder="Masukkan password"
-                rightElement={
-                  <a href="#" className="text-sm font-medium text-emerald-700 hover:text-emerald-800">
-                    Lupa password?
-                  </a>
-                }
+                placeholder="Input password"
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 value={formik.values.password}
                 error={formik.touched.password ? formik.errors.password : undefined}
               />
 
-              <div className="flex items-center justify-between gap-4">
-                <label className="flex items-center gap-2 text-sm text-slate-600">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                  />
-                  Ingat saya
-                </label>
-              </div>
-
               {loginMutation.isError ? (
-                <p className="text-sm text-red-600">
-                  Belum berhasil masuk. Periksa kembali username dan password kamu.
-                </p>
+                <p className="text-sm text-red-600">Somewthing went wrong, Please try again.</p>
               ) : null}
 
               {loginMutation.isSuccess ? (
@@ -135,16 +98,9 @@ const LoginPage = ({ handleSetUser, user }: LoginPageProps) => {
               ) : null}
 
               <Button type="submit" disabled={loginMutation.isPending}>
-                {loginMutation.isPending ? "Memproses..." : "Masuk"}
+                {loginMutation.isPending ? "Loading..." : "Log In"}
               </Button>
             </form>
-
-            <p className="mt-8 text-center text-sm text-slate-500">
-              Belum punya akun?{" "}
-              <a href="#" className="font-semibold text-emerald-700 hover:text-emerald-800">
-                Hubungi admin
-              </a>
-            </p>
           </div>
         </div>
       </section>

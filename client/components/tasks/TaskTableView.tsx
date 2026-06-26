@@ -9,12 +9,7 @@ type TaskTableViewProps = {
   onDelete: (task: Task) => void;
 };
 
-export default function TaskTableView({
-  tasks,
-  isDeleting,
-  onEdit,
-  onDelete,
-}: TaskTableViewProps) {
+export default function TaskTableView({ tasks, isDeleting, onEdit, onDelete }: TaskTableViewProps) {
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="overflow-x-auto">
@@ -36,24 +31,16 @@ export default function TaskTableView({
                 <td className="px-4 py-4">
                   <span
                     className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      task.status === "completed"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-amber-100 text-amber-700"
+                      task.status === "completed" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
                     }`}
                   >
                     {task.status}
                   </span>
                 </td>
-                <td className="px-4 py-4 text-slate-500">
-                  {new Date(task.updated_at).toLocaleDateString("id-ID")}
-                </td>
+                <td className="px-4 py-4 text-slate-500">{new Date(task.updated_at).toLocaleDateString("id-ID")}</td>
                 <td className="px-4 py-4">
                   <div className="flex justify-end gap-2">
-                    <Button
-                      variant="icon"
-                      aria-label="Edit task"
-                      onClick={() => onEdit(task)}
-                    >
+                    <Button variant="icon" aria-label="Edit task" onClick={() => onEdit(task)}>
                       <MdModeEdit className="text-lg" />
                     </Button>
                     <Button
@@ -74,9 +61,7 @@ export default function TaskTableView({
       </div>
 
       {tasks.length === 0 ? (
-        <div className="border-t border-slate-100 p-8 text-center text-sm text-slate-500">
-          Belum ada task untuk filter ini.
-        </div>
+        <div className="border-t border-slate-100 p-8 text-center text-sm text-slate-500">No tasks found.</div>
       ) : null}
     </section>
   );
