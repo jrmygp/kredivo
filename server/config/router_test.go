@@ -100,6 +100,36 @@ func TestTaskRoutesRequireAuth(t *testing.T) {
 	}
 }
 
+func TestTaskFindAllSorting(t *testing.T) {
+	router := testRouter()
+
+	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"Alpha"}`, true)
+	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"Charlie"}`, true)
+	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"Bravo"}`, true)
+
+	listResp := doJSON(router, http.MethodGet, "/api/tasks?sortBy=title&sortOrder=desc", "", true)
+	if listResp.Code != http.StatusOK {
+		t.Fatalf("list status = %d, want %d; body = %s", listResp.Code, http.StatusOK, listResp.Body.String())
+	}
+
+	var listed struct {
+		Data []struct {
+			Title string `json:"title"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(listResp.Body.Bytes(), &listed); err != nil {
+		t.Fatalf("decode list response: %v", err)
+	}
+
+	got := []string{listed.Data[0].Title, listed.Data[1].Title, listed.Data[2].Title}
+	want := []string{"Charlie", "Bravo", "Alpha"}
+	for index := range want {
+		if got[index] != want[index] {
+			t.Fatalf("unexpected sort order: got %+v, want %+v", got, want)
+		}
+	}
+}
+
 func testRouter() http.Handler {
 	taskRepository := repository.NewTaskRepository()
 	taskService := service.NewTaskService(taskRepository)

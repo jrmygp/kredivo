@@ -11,6 +11,7 @@ import (
 
 var (
 	ErrInvalidTaskStatus = errors.New("invalid task status")
+	ErrInvalidTaskSort   = errors.New("invalid task sort")
 	ErrTaskTitleRequired = errors.New("task title is required")
 	ErrTaskUpdateEmpty   = errors.New("task update is empty")
 )
@@ -23,7 +24,7 @@ func NewTaskService(repository repository.TaskRepository) *taskService {
 	return &taskService{repository}
 }
 
-func (s *taskService) FindAll(userID, status, searchQuery string, page int) ([]model.Task, int64, int, int, int, error) {
+func (s *taskService) FindAll(userID, status, searchQuery, sortBy, sortOrder string, page int) ([]model.Task, int64, int, int, int, error) {
 	status = strings.TrimSpace(status)
 	if status == "" {
 		status = "all"
@@ -31,6 +32,23 @@ func (s *taskService) FindAll(userID, status, searchQuery string, page int) ([]m
 	if status != "all" && !model.IsValidTaskStatus(status) {
 		return nil, 0, 0, 0, 0, ErrInvalidTaskStatus
 	}
+
+	sortBy = strings.TrimSpace(sortBy)
+	if sortBy == "" {
+		sortBy = "created"
+	}
+	if sortBy != "title" && sortBy != "status" && sortBy != "created" {
+		return nil, 0, 0, 0, 0, ErrInvalidTaskSort
+	}
+
+	sortOrder = strings.TrimSpace(sortOrder)
+	if sortOrder == "" {
+		sortOrder = "desc"
+	}
+	if sortOrder != "asc" && sortOrder != "desc" {
+		return nil, 0, 0, 0, 0, ErrInvalidTaskSort
+	}
+
 	if page < 1 {
 		return []model.Task{}, 0, 0, 0, 0, nil
 	}
@@ -38,7 +56,7 @@ func (s *taskService) FindAll(userID, status, searchQuery string, page int) ([]m
 	pageSize := 5
 	offset := (page - 1) * pageSize
 
-	tasks, totalCount, err := s.repository.FindAll(userID, status, searchQuery, offset, pageSize)
+	tasks, totalCount, err := s.repository.FindAll(userID, status, searchQuery, sortBy, sortOrder, offset, pageSize)
 	if err != nil {
 		return nil, 0, 0, 0, 0, err
 	}

@@ -25,7 +25,7 @@ func NewTaskRepository() *taskRepository {
 	}
 }
 
-func (r *taskRepository) FindAll(userID, status, searchQuery string, offset, pageSize int) ([]model.Task, int64, error) {
+func (r *taskRepository) FindAll(userID, status, searchQuery, sortBy, sortOrder string, offset, pageSize int) ([]model.Task, int64, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -46,13 +46,11 @@ func (r *taskRepository) FindAll(userID, status, searchQuery string, offset, pag
 	}
 
 	slices.SortFunc(tasks, func(a, b model.Task) int {
-		if a.ID < b.ID {
-			return -1
+		result := compareTasks(a, b, sortBy)
+		if sortOrder == "desc" {
+			return -result
 		}
-		if a.ID > b.ID {
-			return 1
-		}
-		return 0
+		return result
 	})
 
 	totalCount := int64(len(tasks))
@@ -66,6 +64,37 @@ func (r *taskRepository) FindAll(userID, status, searchQuery string, offset, pag
 	}
 
 	return tasks[offset:end], totalCount, nil
+}
+
+func compareTasks(a, b model.Task, sortBy string) int {
+	switch sortBy {
+	case "title":
+		result := strings.Compare(strings.ToLower(a.Title), strings.ToLower(b.Title))
+		if result != 0 {
+			return result
+		}
+	case "status":
+		result := strings.Compare(a.Status, b.Status)
+		if result != 0 {
+			return result
+		}
+	case "created":
+		if a.CreatedAt.Before(b.CreatedAt) {
+			return -1
+		}
+		if a.CreatedAt.After(b.CreatedAt) {
+			return 1
+		}
+	default:
+	}
+
+	if a.ID < b.ID {
+		return -1
+	}
+	if a.ID > b.ID {
+		return 1
+	}
+	return 0
 }
 
 func (r *taskRepository) FindByID(userID string, id int64) (model.Task, error) {

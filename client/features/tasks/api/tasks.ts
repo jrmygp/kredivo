@@ -12,9 +12,11 @@ export const getTasks = async ({
   status = "all",
   search = "",
   page = 1,
+  sortBy = "created",
+  sortOrder = "desc",
 }: GetTasksParams = {}): Promise<PaginationResponse<Task[]>> => {
   const response = await axiosInstance.get<PaginationResponse<Task[]>>("/api/tasks", {
-    params: { status, search, page },
+    params: { status, search, page, sortBy, sortOrder },
   });
 
   return response.data;

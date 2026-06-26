@@ -5,7 +5,7 @@ import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import TaskTableView from "@/components/tasks/TaskTableView";
 import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from "@/features/tasks/hooks/useTasks";
-import type { Task, TaskFilter, TaskStatus } from "@/features/tasks/types";
+import type { Task, TaskFilter, TaskSortBy, TaskSortOrder, TaskStatus } from "@/features/tasks/types";
 import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -27,12 +27,18 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<TaskSortBy>("created");
+  const [sortDirections, setSortDirections] = useState<Record<TaskSortBy, TaskSortOrder>>({
+    title: "asc",
+    status: "asc",
+    created: "desc",
+  });
   const [modalMode, setModalMode] = useState<"add" | "edit" | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<TaskStatus>("active");
 
-  const tasksQuery = useTasks({ status: filter, search: debouncedSearch, page });
+  const tasksQuery = useTasks({ status: filter, search: debouncedSearch, page, sortBy, sortOrder: sortDirections[sortBy] });
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
@@ -128,6 +134,15 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
     setPage(1);
   };
 
+  const handleSortChange = (nextSortBy: TaskSortBy) => {
+    setSortDirections((currentDirections) => ({
+      ...currentDirections,
+      [nextSortBy]: currentDirections[nextSortBy] === "asc" ? "desc" : "asc",
+    }));
+    setSortBy(nextSortBy);
+    setPage(1);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user_id");
@@ -168,10 +183,13 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
             firstRow={tasksResponse?.firstRow ?? 0}
             lastRow={tasksResponse?.lastRow ?? 0}
             totalPages={tasksResponse?.totalPages ?? 0}
+            sortBy={sortBy}
+            sortDirections={sortDirections}
             isDeleting={deleteTaskMutation.isPending}
             onSearchChange={handleSearchChange}
             onStatusFilterChange={handleFilterChange}
             onPageChange={setPage}
+            onSortChange={handleSortChange}
             onEdit={openEditModal}
             onDelete={handleDeleteTask}
             openAddModal={openAddModal}

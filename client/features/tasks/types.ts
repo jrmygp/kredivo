@@ -19,6 +19,10 @@ export type TaskStatus = "active" | "completed";
 
 export type TaskFilter = "all" | TaskStatus;
 
+export type TaskSortBy = "title" | "status" | "created";
+
+export type TaskSortOrder = "asc" | "desc";
+
 export type Task = {
   id: number;
   title: string;
@@ -41,4 +45,6 @@ export type GetTasksParams = {
   status?: TaskFilter;
   search?: string;
   page?: number;
+  sortBy?: TaskSortBy;
+  sortOrder?: TaskSortOrder;
 };

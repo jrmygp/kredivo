@@ -45,11 +45,19 @@ func (h *TaskController) FindAll(c *gin.Context) {
 		userIDFromContext(c),
 		c.DefaultQuery("status", "all"),
 		searchQuery,
+		c.DefaultQuery("sortBy", "created"),
+		c.DefaultQuery("sortOrder", "desc"),
 		page,
 	)
 	if errors.Is(err, service.ErrInvalidTaskStatus) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "status must be all, active, or completed",
+		})
+		return
+	}
+	if errors.Is(err, service.ErrInvalidTaskSort) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "sortBy must be title, status, or created and sortOrder must be asc or desc",
 		})
 		return
 	}

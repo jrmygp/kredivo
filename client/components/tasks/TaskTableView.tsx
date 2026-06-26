@@ -1,8 +1,15 @@
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
-import type { Task, TaskFilter } from "@/features/tasks/types";
-import { MdChevronLeft, MdChevronRight, MdModeEdit, MdOutlineDeleteOutline } from "react-icons/md";
+import type { Task, TaskFilter, TaskSortBy, TaskSortOrder } from "@/features/tasks/types";
+import {
+  MdArrowDownward,
+  MdArrowUpward,
+  MdChevronLeft,
+  MdChevronRight,
+  MdModeEdit,
+  MdOutlineDeleteOutline,
+} from "react-icons/md";
 
 type TaskTableViewProps = {
   tasks: Task[];
@@ -13,10 +20,13 @@ type TaskTableViewProps = {
   firstRow: number;
   lastRow: number;
   totalPages: number;
+  sortBy: TaskSortBy;
+  sortDirections: Record<TaskSortBy, TaskSortOrder>;
   isDeleting: boolean;
   onSearchChange: (value: string) => void;
   onStatusFilterChange: (value: TaskFilter) => void;
   onPageChange: (page: number) => void;
+  onSortChange: (sortBy: TaskSortBy) => void;
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
   openAddModal: () => void;
@@ -70,10 +80,13 @@ export default function TaskTableView({
   firstRow,
   lastRow,
   totalPages,
+  sortBy,
+  sortDirections,
   isDeleting,
   onSearchChange,
   onStatusFilterChange,
   onPageChange,
+  onSortChange,
   onEdit,
   onDelete,
   openAddModal,
@@ -81,6 +94,11 @@ export default function TaskTableView({
   const canGoPrevious = page > 1;
   const canGoNext = page < totalPages;
   const paginationItems = getPaginationItems(page, totalPages);
+  const sortableColumns: Array<{ key: TaskSortBy; label: string }> = [
+    { key: "title", label: "Task" },
+    { key: "status", label: "Status" },
+    { key: "created", label: "Created" },
+  ];
 
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -107,9 +125,28 @@ export default function TaskTableView({
         <table className="w-full min-w-[42rem] border-collapse text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-[0.12em] text-slate-500">
             <tr>
-              <th className="px-4 py-3 font-semibold">Task</th>
-              <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3 font-semibold">Updated</th>
+              {sortableColumns.map((column) => {
+                const isActiveSort = sortBy === column.key;
+                const sortOrder = sortDirections[column.key];
+                const SortIcon = sortOrder === "asc" ? MdArrowUpward : MdArrowDownward;
+
+                return (
+                  <th key={column.key} className="px-4 py-3 font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => onSortChange(column.key)}
+                      className="flex items-center gap-2 rounded-md text-left transition hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                    >
+                      <span>{column.label}</span>
+                      <SortIcon
+                        className={`text-base transition ${
+                          isActiveSort ? "text-slate-700" : "text-slate-300"
+                        }`}
+                      />
+                    </button>
+                  </th>
+                );
+              })}
               <th className="px-4 py-3 text-right font-semibold">Actions</th>
             </tr>
           </thead>
@@ -128,7 +165,7 @@ export default function TaskTableView({
                     {task.status.at(0)?.toUpperCase() + task.status.slice(1)}
                   </span>
                 </td>
-                <td className="px-4 py-4 text-slate-500">{new Date(task.updated_at).toLocaleDateString("id-ID")}</td>
+                <td className="px-4 py-4 text-slate-500">{new Date(task.created_at).toLocaleDateString("id-ID")}</td>
                 <td className="px-4 py-4">
                   <div className="flex justify-end gap-2">
                     <Button variant="icon" aria-label="Edit task" onClick={() => onEdit(task)}>
