@@ -49,7 +49,11 @@ func TestTaskFlow(t *testing.T) {
 	}
 
 	var listed struct {
-		Data []struct {
+		TotalCount int64 `json:"totalCount"`
+		FirstRow   int   `json:"firstRow"`
+		LastRow    int   `json:"lastRow"`
+		TotalPages int   `json:"totalPages"`
+		Data       []struct {
 			ID     int64  `json:"id"`
 			Status string `json:"status"`
 		} `json:"data"`
@@ -59,6 +63,9 @@ func TestTaskFlow(t *testing.T) {
 	}
 	if len(listed.Data) != 1 || listed.Data[0].ID != 1 || listed.Data[0].Status != "completed" {
 		t.Fatalf("unexpected completed tasks: %+v", listed.Data)
+	}
+	if listed.TotalCount != 1 || listed.FirstRow != 1 || listed.LastRow != 1 || listed.TotalPages != 1 {
+		t.Fatalf("unexpected pagination metadata: %+v", listed)
 	}
 
 	deleteResp := doJSON(router, http.MethodDelete, "/api/tasks/1", "", true)

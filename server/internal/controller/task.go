@@ -32,7 +32,21 @@ func convertTaskResponse(o model.Task) dto.TaskResponse {
 }
 
 func (h *TaskController) FindAll(c *gin.Context) {
-	tasks, err := h.service.FindAll(userIDFromContext(c), c.DefaultQuery("status", "all"))
+	searchQuery := c.Query("search")
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to convert page to int",
+		})
+		return
+	}
+
+	tasks, totalCount, firstRow, lastRow, totalPages, err := h.service.FindAll(
+		userIDFromContext(c),
+		c.DefaultQuery("status", "all"),
+		searchQuery,
+		page,
+	)
 	if errors.Is(err, service.ErrInvalidTaskStatus) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "status must be all, active, or completed",
@@ -51,10 +65,14 @@ func (h *TaskController) FindAll(c *gin.Context) {
 		taskResponses = append(taskResponses, convertTaskResponse(task))
 	}
 
-	webResponse := dto.Response{
-		Code:   http.StatusOK,
-		Status: "OK",
-		Data:   taskResponses,
+	webResponse := dto.PaginationResponse{
+		Code:       http.StatusOK,
+		Status:     "OK",
+		Data:       taskResponses,
+		TotalCount: totalCount,
+		FirstRow:   firstRow,
+		LastRow:    lastRow,
+		TotalPages: totalPages,
 	}
 
 	c.JSON(http.StatusOK, webResponse)

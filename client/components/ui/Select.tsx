@@ -7,7 +7,8 @@ type SelectOption = {
 };
 
 type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
-  label: string;
+  label?: string;
+  containerClassName?: string;
   options: SelectOption[];
   error?: string;
   helperText?: string;
@@ -16,6 +17,7 @@ type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
 export default function Select({
   id,
   label,
+  containerClassName = "",
   options,
   error,
   helperText,
@@ -26,12 +28,14 @@ export default function Select({
   const messageId = message && id ? `${id}-message` : undefined;
 
   return (
-    <div>
-      <label htmlFor={id} className="block text-sm font-medium text-slate-700">
-        {label}
-      </label>
+    <div className={containerClassName}>
+      {label ? (
+        <label htmlFor={id} className="block text-sm font-medium text-slate-700">
+          {label}
+        </label>
+      ) : null}
 
-      <div className="relative mt-2">
+      <div className={`relative ${label ? "mt-2" : ""}`}>
         <select
           id={id}
           aria-invalid={error ? "true" : undefined}
@@ -44,11 +48,7 @@ export default function Select({
           {...props}
         >
           {options.map((option) => (
-            <option
-              key={option.value}
-              value={option.value}
-              className="rounded-md"
-            >
+            <option key={option.value} value={option.value} className="rounded-md">
               {option.label}
             </option>
           ))}
@@ -57,10 +57,7 @@ export default function Select({
       </div>
 
       {message ? (
-        <p
-          id={messageId}
-          className={`mt-2 text-sm ${error ? "text-red-600" : "text-slate-500"}`}
-        >
+        <p id={messageId} className={`mt-2 text-sm ${error ? "text-red-600" : "text-slate-500"}`}>
           {message}
         </p>
       ) : null}

@@ -9,6 +9,16 @@ type Response struct {
 	Error  string      `json:"error,omitempty"`
 }
 
+type PaginationResponse struct {
+	Code       int         `json:"code"`
+	Status     string      `json:"status"`
+	Data       interface{} `json:"data"`
+	TotalCount int64       `json:"totalCount"`
+	FirstRow   int         `json:"firstRow"`
+	LastRow    int         `json:"lastRow"`
+	TotalPages int         `json:"totalPages"`
+}
+
 type CreateTaskRequest struct {
 	Title string `json:"title"`
 }

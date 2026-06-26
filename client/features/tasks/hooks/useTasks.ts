@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createTask, deleteTask, getTasks, updateTask } from "../api/tasks";
-import type { TaskFilter } from "../types";
+import type { GetTasksParams } from "../types";
 
 const tasksQueryKey = ["tasks"] as const;
 
-export const useTasks = (status: TaskFilter = "all") => {
+export const useTasks = (params: GetTasksParams = {}) => {
   return useQuery({
-    queryKey: [...tasksQueryKey, status],
-    queryFn: () => getTasks(status),
+    queryKey: [...tasksQueryKey, params],
+    queryFn: () => getTasks(params),
   });
 };
 

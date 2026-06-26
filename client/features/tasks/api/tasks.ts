@@ -2,17 +2,22 @@ import axiosInstance from "@/config/axios";
 import type {
   ApiResponse,
   CreateTaskPayload,
+  GetTasksParams,
+  PaginationResponse,
   Task,
-  TaskFilter,
   UpdateTaskPayload,
 } from "../types";
 
-export const getTasks = async (status: TaskFilter = "all"): Promise<Task[]> => {
-  const response = await axiosInstance.get<ApiResponse<Task[]>>("/api/tasks", {
-    params: { status },
+export const getTasks = async ({
+  status = "all",
+  search = "",
+  page = 1,
+}: GetTasksParams = {}): Promise<PaginationResponse<Task[]>> => {
+  const response = await axiosInstance.get<PaginationResponse<Task[]>>("/api/tasks", {
+    params: { status, search, page },
   });
 
-  return response.data.data;
+  return response.data;
 };
 
 export const createTask = async (

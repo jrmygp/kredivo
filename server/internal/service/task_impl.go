@@ -23,16 +23,35 @@ func NewTaskService(repository repository.TaskRepository) *taskService {
 	return &taskService{repository}
 }
 
-func (s *taskService) FindAll(userID, status string) ([]model.Task, error) {
+func (s *taskService) FindAll(userID, status, searchQuery string, page int) ([]model.Task, int64, int, int, int, error) {
 	status = strings.TrimSpace(status)
 	if status == "" {
 		status = "all"
 	}
 	if status != "all" && !model.IsValidTaskStatus(status) {
-		return nil, ErrInvalidTaskStatus
+		return nil, 0, 0, 0, 0, ErrInvalidTaskStatus
+	}
+	if page < 1 {
+		return []model.Task{}, 0, 0, 0, 0, nil
 	}
 
-	return s.repository.FindAll(userID, status)
+	pageSize := 5
+	offset := (page - 1) * pageSize
+
+	tasks, totalCount, err := s.repository.FindAll(userID, status, searchQuery, offset, pageSize)
+	if err != nil {
+		return nil, 0, 0, 0, 0, err
+	}
+
+	firstRow := offset + 1
+	lastRow := offset + len(tasks)
+	if len(tasks) == 0 {
+		firstRow = 0
+		lastRow = 0
+	}
+	totalPages := (int(totalCount) + pageSize - 1) / pageSize
+
+	return tasks, totalCount, firstRow, lastRow, totalPages, nil
 }
 
 func (s *taskService) Create(userID string, taskForm dto.CreateTaskRequest) (model.Task, error) {

@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -24,16 +25,20 @@ func NewTaskRepository() *taskRepository {
 	}
 }
 
-func (r *taskRepository) FindAll(userID, status string) ([]model.Task, error) {
+func (r *taskRepository) FindAll(userID, status, searchQuery string, offset, pageSize int) ([]model.Task, int64, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	tasks := make([]model.Task, 0, len(r.tasks))
+	searchQuery = strings.ToLower(strings.TrimSpace(searchQuery))
 	for _, task := range r.tasks {
 		if task.UserID != userID {
 			continue
 		}
 		if status != "" && status != "all" && task.Status != status {
+			continue
+		}
+		if searchQuery != "" && !strings.Contains(strings.ToLower(task.Title), searchQuery) {
 			continue
 		}
 
@@ -50,7 +55,17 @@ func (r *taskRepository) FindAll(userID, status string) ([]model.Task, error) {
 		return 0
 	})
 
-	return tasks, nil
+	totalCount := int64(len(tasks))
+	if offset >= len(tasks) {
+		return []model.Task{}, totalCount, nil
+	}
+
+	end := offset + pageSize
+	if end > len(tasks) {
+		end = len(tasks)
+	}
+
+	return tasks[offset:end], totalCount, nil
 }
 
 func (r *taskRepository) FindByID(userID string, id int64) (model.Task, error) {

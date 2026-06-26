@@ -5,6 +5,16 @@ export type ApiResponse<TData> = {
   error?: string;
 };
 
+export type PaginationResponse<TData> = {
+  code: number;
+  status: string;
+  data: TData;
+  totalCount: number;
+  firstRow: number;
+  lastRow: number;
+  totalPages: number;
+};
+
 export type TaskStatus = "active" | "completed";
 
 export type TaskFilter = "all" | TaskStatus;
@@ -25,4 +35,10 @@ export type UpdateTaskPayload = {
   id: number;
   title?: string;
   status?: TaskStatus;
+};
+
+export type GetTasksParams = {
+  status?: TaskFilter;
+  search?: string;
+  page?: number;
 };

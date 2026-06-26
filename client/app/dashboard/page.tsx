@@ -7,16 +7,11 @@ import TaskTableView from "@/components/tasks/TaskTableView";
 import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from "@/features/tasks/hooks/useTasks";
 import type { Task, TaskFilter, TaskStatus } from "@/features/tasks/types";
 import { useSnackbar } from "notistack";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { mapDispatchToProps, mapStateToProps } from "@/redux";
 import { connect } from "react-redux";
-
-const filters: Array<{ value: TaskFilter; label: string }> = [
-  { value: "all", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "completed", label: "Completed" },
-];
+import { IoMdClose } from "react-icons/io";
 
 const statusOptions: Array<{ value: TaskStatus; label: string }> = [
   { value: "active", label: "Active" },
@@ -29,18 +24,31 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
   const [filter, setFilter] = useState<TaskFilter>("all");
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [modalMode, setModalMode] = useState<"add" | "edit" | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<TaskStatus>("active");
 
-  const tasksQuery = useTasks(filter);
+  const tasksQuery = useTasks({ status: filter, search: debouncedSearch, page });
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
-  const tasks = tasksQuery.data ?? [];
+  const tasksResponse = tasksQuery.data;
+  const tasks = tasksResponse?.data ?? [];
 
   const isSubmitting = createTaskMutation.isPending || updateTaskMutation.isPending;
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
 
   const openAddModal = () => {
     createTaskMutation.reset();
@@ -81,7 +89,7 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
         {
           onSuccess: () => {
             closeModal();
-            enqueueSnackbar("Task berhasil diperbarui.", {
+            enqueueSnackbar("Task updated successfully.", {
               variant: "success",
             });
           },
@@ -95,7 +103,7 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
       {
         onSuccess: () => {
           closeModal();
-          enqueueSnackbar("Task berhasil dibuat.", { variant: "success" });
+          enqueueSnackbar("Task created successfully.", { variant: "success" });
         },
       },
     );
@@ -104,11 +112,20 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
   const handleDeleteTask = (task: Task) => {
     deleteTaskMutation.mutate(task.id, {
       onSuccess: (deletedTask) => {
-        enqueueSnackbar(`Task "${deletedTask.title}" berhasil dihapus.`, {
+        enqueueSnackbar(`Task "${deletedTask.title}" deleted successfully.`, {
           variant: "success",
         });
       },
     });
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+  };
+
+  const handleFilterChange = (value: TaskFilter) => {
+    setFilter(value);
+    setPage(1);
   };
 
   const handleLogout = () => {
@@ -126,30 +143,9 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
             <h1 className="mt-2 text-3xl font-bold tracking-normal">My Tasks</h1>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-sm sm:w-auto">
-              {filters.map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() => setFilter(item.value)}
-                  className={`h-10 min-w-20 rounded-md px-3 text-sm font-semibold transition sm:min-w-28 ${
-                    filter === item.value ? "bg-emerald-600 text-white" : "text-slate-600 hover:bg-slate-100"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
-            <Button className="sm:w-auto sm:px-5" onClick={openAddModal}>
-              Add Task
-            </Button>
-
-            <Button color="danger" className="sm:w-auto sm:px-5" onClick={handleLogout}>
-              Keluar
-            </Button>
-          </div>
+          <Button color="danger" className="sm:w-auto sm:px-5" onClick={handleLogout}>
+            Logout
+          </Button>
         </header>
 
         {tasksQuery.isLoading ? (
@@ -158,16 +154,27 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
 
         {tasksQuery.isError ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-sm text-red-700">
-            Failed to laod tasks.
+            Failed to load tasks.
           </div>
         ) : null}
 
         {!tasksQuery.isLoading && !tasksQuery.isError ? (
           <TaskTableView
             tasks={tasks}
+            search={search}
+            statusFilter={filter}
+            page={page}
+            totalCount={tasksResponse?.totalCount ?? 0}
+            firstRow={tasksResponse?.firstRow ?? 0}
+            lastRow={tasksResponse?.lastRow ?? 0}
+            totalPages={tasksResponse?.totalPages ?? 0}
             isDeleting={deleteTaskMutation.isPending}
+            onSearchChange={handleSearchChange}
+            onStatusFilterChange={handleFilterChange}
+            onPageChange={setPage}
             onEdit={openEditModal}
             onDelete={handleDeleteTask}
+            openAddModal={openAddModal}
           />
         ) : null}
       </div>
@@ -185,7 +192,7 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
                 className="rounded-md px-2 py-1 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                 aria-label="Close modal"
               >
-                x
+                <IoMdClose />
               </button>
             </div>
 
@@ -210,11 +217,17 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
               ) : null}
 
               {createTaskMutation.isError || updateTaskMutation.isError ? (
-                <p className="text-sm text-red-600">Task belum bisa disimpan. Coba cek input atau koneksi backend.</p>
+                <p className="text-sm text-red-600">Something went wrong, please try again.</p>
               ) : null}
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <Button type="button" variant="outlined" className="sm:w-auto sm:px-5" onClick={closeModal}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  color="danger"
+                  className="sm:w-auto sm:px-5"
+                  onClick={closeModal}
+                >
                   Cancel
                 </Button>
                 <Button type="submit" className="sm:w-auto sm:px-5" disabled={isSubmitting || !title.trim()}>

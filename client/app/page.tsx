@@ -24,8 +24,8 @@ const LoginPage = ({ handleSetUser, user }: LoginPageProps) => {
       password: "",
     },
     validationSchema: yup.object({
-      username: yup.string().required("Username wajib diisi"),
-      password: yup.string().required("Password wajib diisi"),
+      username: yup.string().required("Username is required"),
+      password: yup.string().required("Password is required"),
     }),
     onSubmit: (values) => {
       loginMutation.mutate(values, {
@@ -33,7 +33,7 @@ const LoginPage = ({ handleSetUser, user }: LoginPageProps) => {
           localStorage.setItem("token", data.token);
           localStorage.setItem("user_id", data.user_id);
           handleSetUser(data);
-          enqueueSnackbar("Login berhasil. Selamat datang kembali.", {
+          enqueueSnackbar("Welcome back!", {
             variant: "success",
           });
         },
@@ -53,8 +53,7 @@ const LoginPage = ({ handleSetUser, user }: LoginPageProps) => {
         <div className="px-6 py-8 sm:px-10 sm:py-12">
           <div className="mx-auto w-full max-w-md">
             <div className="md:hidden">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Workspace</p>
-              <h1 className="mt-4 text-3xl font-bold leading-tight">Saatnya lanjut bekerja</h1>
+              <h1 className="mt-4 text-3xl font-bold leading-tight">Welcome back</h1>
             </div>
 
             <div className="hidden md:block">
@@ -90,11 +89,11 @@ const LoginPage = ({ handleSetUser, user }: LoginPageProps) => {
               />
 
               {loginMutation.isError ? (
-                <p className="text-sm text-red-600">Somewthing went wrong, Please try again.</p>
+                <p className="text-sm text-red-600">Something went wrong, please try again.</p>
               ) : null}
 
               {loginMutation.isSuccess ? (
-                <p className="text-sm text-emerald-700">Berhasil masuk. Kamu akan diarahkan sebentar lagi.</p>
+                <p className="text-sm text-emerald-700">Welcome back! You will be redirected shortly.</p>
               ) : null}
 
               <Button type="submit" disabled={loginMutation.isPending}>
