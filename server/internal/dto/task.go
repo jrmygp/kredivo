@@ -28,8 +28,27 @@ type UpdateTaskRequest struct {
 	Status *string `json:"status"`
 }
 
+type CreateSubTaskRequest struct {
+	Title string `json:"title"`
+}
+
+type UpdateSubTaskRequest struct {
+	Title  *string `json:"title"`
+	Status *string `json:"status"`
+}
+
 type TaskResponse struct {
+	ID            int64     `json:"id"`
+	Title         string    `json:"title"`
+	Status        string    `json:"status"`
+	SubTasksCount int       `json:"subTasksCount"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+type SubTaskResponse struct {
 	ID        int64     `json:"id"`
+	TaskID    int64     `json:"task_id"`
 	Title     string    `json:"title"`
 	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"created_at"`

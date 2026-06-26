@@ -68,5 +68,7 @@ Advanced Challenge (Optional)
 # 1 Implement pagination and sorting on /tasks endpoint.
 
 2 Add WebSocket support for real-time updates.
-3 Support sub-tasks (nested structure).
+
+# 3 Support sub-tasks (nested structure).
+
 4 Add /api/stats endpoint for task completion summary per user.

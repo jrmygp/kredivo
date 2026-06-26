@@ -43,7 +43,7 @@ export default function Select({
           className={`h-12 w-full appearance-none rounded-lg border bg-white px-4 pr-10 text-sm outline-none transition focus:ring-4 ${
             error
               ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-              : "border-slate-300 focus:border-emerald-600 focus:ring-emerald-100"
+              : "border-slate-300 focus:border-blue-600 focus:ring-blue-100"
           } ${className}`}
           {...props}
         >

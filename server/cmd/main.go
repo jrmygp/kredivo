@@ -9,13 +9,16 @@ import (
 
 func main() {
 	taskRepository := repository.NewTaskRepository()
-	taskService := service.NewTaskService(taskRepository)
+	subTaskRepository := repository.NewSubTaskRepository()
+	taskService := service.NewTaskService(taskRepository, subTaskRepository)
 	taskController := controller.NewTaskController(taskService)
+	subTaskService := service.NewSubTaskService(taskRepository, subTaskRepository)
+	subTaskController := controller.NewSubTaskController(subTaskService)
 
 	authService := service.NewAuthService()
 	authController := controller.NewAuthController(authService)
 
-	router := config.NewRouter(authController, taskController, authService)
+	router := config.NewRouter(authController, taskController, subTaskController, authService)
 
 	router.Run(":8080")
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"slices"
 	"strings"
 
 	"task-management-server/internal/dto"
@@ -17,11 +18,12 @@ var (
 )
 
 type taskService struct {
-	repository repository.TaskRepository
+	repository        repository.TaskRepository
+	subTaskRepository repository.SubTaskRepository
 }
 
-func NewTaskService(repository repository.TaskRepository) *taskService {
-	return &taskService{repository}
+func NewTaskService(repository repository.TaskRepository, subTaskRepository repository.SubTaskRepository) *taskService {
+	return &taskService{repository: repository, subTaskRepository: subTaskRepository}
 }
 
 func (s *taskService) FindAll(userID, status, searchQuery, sortBy, sortOrder string, page int) ([]model.Task, int64, int, int, int, error) {
@@ -37,7 +39,7 @@ func (s *taskService) FindAll(userID, status, searchQuery, sortBy, sortOrder str
 	if sortBy == "" {
 		sortBy = "created"
 	}
-	if sortBy != "title" && sortBy != "status" && sortBy != "created" {
+	if sortBy != "title" && sortBy != "status" && sortBy != "created" && sortBy != "subTasksCount" {
 		return nil, 0, 0, 0, 0, ErrInvalidTaskSort
 	}
 
@@ -56,20 +58,76 @@ func (s *taskService) FindAll(userID, status, searchQuery, sortBy, sortOrder str
 	pageSize := 5
 	offset := (page - 1) * pageSize
 
+	if sortBy == "subTasksCount" {
+		tasks, err := s.repository.FindAllFiltered(userID, status, searchQuery)
+		if err != nil {
+			return nil, 0, 0, 0, 0, err
+		}
+
+		taskIDs := make([]int64, 0, len(tasks))
+		for _, task := range tasks {
+			taskIDs = append(taskIDs, task.ID)
+		}
+		subTaskCounts := s.CountSubTasksByTaskIDs(userID, taskIDs)
+
+		slices.SortFunc(tasks, func(a, b model.Task) int {
+			result := subTaskCounts[a.ID] - subTaskCounts[b.ID]
+			if result == 0 {
+				if a.ID < b.ID {
+					result = -1
+				} else if a.ID > b.ID {
+					result = 1
+				}
+			}
+			if sortOrder == "desc" {
+				return -result
+			}
+			return result
+		})
+
+		paginatedTasks, totalCount, firstRow, lastRow, totalPages := paginateTasks(tasks, offset, pageSize)
+		return paginatedTasks, totalCount, firstRow, lastRow, totalPages, nil
+	}
+
 	tasks, totalCount, err := s.repository.FindAll(userID, status, searchQuery, sortBy, sortOrder, offset, pageSize)
 	if err != nil {
 		return nil, 0, 0, 0, 0, err
 	}
 
+	firstRow, lastRow, totalPages := paginationMetadata(len(tasks), totalCount, offset, pageSize)
+	return tasks, totalCount, firstRow, lastRow, totalPages, nil
+}
+
+func paginateTasks(tasks []model.Task, offset, pageSize int) ([]model.Task, int64, int, int, int) {
+	totalCount := int64(len(tasks))
+	if offset >= len(tasks) {
+		return []model.Task{}, totalCount, 0, 0, paginationTotalPages(totalCount, pageSize)
+	}
+
+	end := offset + pageSize
+	if end > len(tasks) {
+		end = len(tasks)
+	}
+
+	paginatedTasks := tasks[offset:end]
+	firstRow, lastRow, totalPages := paginationMetadata(len(paginatedTasks), totalCount, offset, pageSize)
+	return paginatedTasks, totalCount, firstRow, lastRow, totalPages
+}
+
+func paginationMetadata(rowCount int, totalCount int64, offset, pageSize int) (int, int, int) {
 	firstRow := offset + 1
-	lastRow := offset + len(tasks)
-	if len(tasks) == 0 {
+	lastRow := offset + rowCount
+	if rowCount == 0 {
 		firstRow = 0
 		lastRow = 0
 	}
-	totalPages := (int(totalCount) + pageSize - 1) / pageSize
+	totalPages := paginationTotalPages(totalCount, pageSize)
 
-	return tasks, totalCount, firstRow, lastRow, totalPages, nil
+	return firstRow, lastRow, totalPages
+}
+
+func paginationTotalPages(totalCount int64, pageSize int) int {
+	return (int(totalCount) + pageSize - 1) / pageSize
 }
 
 func (s *taskService) Create(userID string, taskForm dto.CreateTaskRequest) (model.Task, error) {
@@ -117,5 +175,25 @@ func (s *taskService) Update(userID string, id int64, taskForm dto.UpdateTaskReq
 }
 
 func (s *taskService) Delete(userID string, id int64) (model.Task, error) {
-	return s.repository.Delete(userID, id)
+	task, err := s.repository.Delete(userID, id)
+	if err != nil {
+		return model.Task{}, err
+	}
+
+	if s.subTaskRepository != nil {
+		err = s.subTaskRepository.DeleteByTaskID(userID, id)
+		if err != nil {
+			return model.Task{}, err
+		}
+	}
+
+	return task, nil
+}
+
+func (s *taskService) CountSubTasksByTaskIDs(userID string, taskIDs []int64) map[int64]int {
+	if s.subTaskRepository == nil {
+		return map[int64]int{}
+	}
+
+	return s.subTaskRepository.CountByTaskIDs(userID, taskIDs)
 }

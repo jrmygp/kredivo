@@ -9,6 +9,7 @@ import {
   MdChevronRight,
   MdModeEdit,
   MdOutlineDeleteOutline,
+  MdChecklist,
 } from "react-icons/md";
 
 type TaskTableViewProps = {
@@ -28,6 +29,7 @@ type TaskTableViewProps = {
   onPageChange: (page: number) => void;
   onSortChange: (sortBy: TaskSortBy) => void;
   onEdit: (task: Task) => void;
+  onSubTasks: (task: Task) => void;
   onDelete: (task: Task) => void;
   openAddModal: () => void;
 };
@@ -88,6 +90,7 @@ export default function TaskTableView({
   onPageChange,
   onSortChange,
   onEdit,
+  onSubTasks,
   onDelete,
   openAddModal,
 }: TaskTableViewProps) {
@@ -97,8 +100,10 @@ export default function TaskTableView({
   const sortableColumns: Array<{ key: TaskSortBy; label: string }> = [
     { key: "title", label: "Task" },
     { key: "status", label: "Status" },
-    { key: "created", label: "Created" },
+    { key: "subTasksCount", label: "Sub-Tasks" },
   ];
+  const createdSortOrder = sortDirections.created;
+  const CreatedSortIcon = createdSortOrder === "asc" ? MdArrowUpward : MdArrowDownward;
 
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -139,14 +144,24 @@ export default function TaskTableView({
                     >
                       <span>{column.label}</span>
                       <SortIcon
-                        className={`text-base transition ${
-                          isActiveSort ? "text-slate-700" : "text-slate-300"
-                        }`}
+                        className={`text-base transition ${isActiveSort ? "text-slate-700" : "text-slate-300"}`}
                       />
                     </button>
                   </th>
                 );
               })}
+              <th className="px-4 py-3 font-semibold">
+                <button
+                  type="button"
+                  onClick={() => onSortChange("created")}
+                  className="flex items-center gap-2 rounded-md text-left transition hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                >
+                  <span>Created</span>
+                  <CreatedSortIcon
+                    className={`text-base transition ${sortBy === "created" ? "text-slate-700" : "text-slate-300"}`}
+                  />
+                </button>
+              </th>
               <th className="px-4 py-3 text-right font-semibold">Actions</th>
             </tr>
           </thead>
@@ -165,11 +180,20 @@ export default function TaskTableView({
                     {task.status.at(0)?.toUpperCase() + task.status.slice(1)}
                   </span>
                 </td>
+                <td className="px-4 py-4 text-slate-500">{task.subTasksCount}</td>
                 <td className="px-4 py-4 text-slate-500">{new Date(task.created_at).toLocaleDateString("id-ID")}</td>
                 <td className="px-4 py-4">
                   <div className="flex justify-end gap-2">
                     <Button variant="icon" aria-label="Edit task" onClick={() => onEdit(task)}>
                       <MdModeEdit className="text-lg" />
+                    </Button>
+                    <Button
+                      variant="icon"
+                      color="secondary"
+                      aria-label="Manage sub-tasks"
+                      onClick={() => onSubTasks(task)}
+                    >
+                      <MdChecklist className="text-lg" />
                     </Button>
                     <Button
                       variant="icon"
@@ -218,12 +242,9 @@ export default function TaskTableView({
               <Button
                 key={item}
                 variant="icon"
-                color="success"
+                color={item === page ? "primary" : "secondary"}
                 type="button"
                 onClick={() => onPageChange(item)}
-                className={`flex h-10 min-w-10 items-center justify-center rounded-full px-3 text-sm font-semibold transition ${
-                  item === page ? "bg-slate-800 text-black" : "text-slate-700 hover:bg-slate-100"
-                }`}
               >
                 {item}
               </Button>

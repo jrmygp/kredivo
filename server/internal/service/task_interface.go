@@ -10,4 +10,5 @@ type TaskService interface {
 	Create(userID string, task dto.CreateTaskRequest) (model.Task, error)
 	Update(userID string, id int64, task dto.UpdateTaskRequest) (model.Task, error)
 	Delete(userID string, id int64) (model.Task, error)
+	CountSubTasksByTaskIDs(userID string, taskIDs []int64) map[int64]int
 }

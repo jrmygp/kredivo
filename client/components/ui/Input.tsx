@@ -41,7 +41,7 @@ export default function Input({
         className={`${label || rightElement ? "mt-2" : ""} h-12 w-full rounded-lg border px-4 text-sm outline-none transition focus:ring-4 ${
           error
             ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-            : "border-slate-300 focus:border-emerald-600 focus:ring-emerald-100"
+            : "border-slate-300 focus:border-blue-600 focus:ring-blue-100"
         } ${className}`}
         {...props}
       />

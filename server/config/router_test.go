@@ -130,15 +130,130 @@ func TestTaskFindAllSorting(t *testing.T) {
 	}
 }
 
+func TestTaskFindAllSortingBySubTasksCount(t *testing.T) {
+	router := testRouter()
+
+	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"No sub task"}`, true)
+	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"Two sub tasks"}`, true)
+	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"One sub task"}`, true)
+
+	doJSON(router, http.MethodPost, "/api/tasks/2/sub-tasks", `{"title":"First"}`, true)
+	doJSON(router, http.MethodPost, "/api/tasks/2/sub-tasks", `{"title":"Second"}`, true)
+	doJSON(router, http.MethodPost, "/api/tasks/3/sub-tasks", `{"title":"Only"}`, true)
+
+	listResp := doJSON(router, http.MethodGet, "/api/tasks?sortBy=subTasksCount&sortOrder=desc", "", true)
+	if listResp.Code != http.StatusOK {
+		t.Fatalf("list status = %d, want %d; body = %s", listResp.Code, http.StatusOK, listResp.Body.String())
+	}
+
+	var listed struct {
+		Data []struct {
+			Title         string `json:"title"`
+			SubTasksCount int    `json:"subTasksCount"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(listResp.Body.Bytes(), &listed); err != nil {
+		t.Fatalf("decode list response: %v", err)
+	}
+
+	got := []int{listed.Data[0].SubTasksCount, listed.Data[1].SubTasksCount, listed.Data[2].SubTasksCount}
+	want := []int{2, 1, 0}
+	for index := range want {
+		if got[index] != want[index] {
+			t.Fatalf("unexpected sub-task count sort order: got %+v, want %+v", got, want)
+		}
+	}
+}
+
+func TestSubTaskFlow(t *testing.T) {
+	router := testRouter()
+
+	createTaskResp := doJSON(router, http.MethodPost, "/api/tasks", `{"title":"Parent task"}`, true)
+	if createTaskResp.Code != http.StatusCreated {
+		t.Fatalf("create task status = %d, want %d; body = %s", createTaskResp.Code, http.StatusCreated, createTaskResp.Body.String())
+	}
+
+	createSubTaskResp := doJSON(router, http.MethodPost, "/api/tasks/1/sub-tasks", `{"title":"First sub task"}`, true)
+	if createSubTaskResp.Code != http.StatusCreated {
+		t.Fatalf("create sub-task status = %d, want %d; body = %s", createSubTaskResp.Code, http.StatusCreated, createSubTaskResp.Body.String())
+	}
+	secondSubTaskResp := doJSON(router, http.MethodPost, "/api/tasks/1/sub-tasks", `{"title":"Second sub task"}`, true)
+	if secondSubTaskResp.Code != http.StatusCreated {
+		t.Fatalf("create second sub-task status = %d, want %d; body = %s", secondSubTaskResp.Code, http.StatusCreated, secondSubTaskResp.Body.String())
+	}
+
+	var created struct {
+		Data struct {
+			ID     int64  `json:"id"`
+			TaskID int64  `json:"task_id"`
+			Status string `json:"status"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(createSubTaskResp.Body.Bytes(), &created); err != nil {
+		t.Fatalf("decode create sub-task response: %v", err)
+	}
+	if created.Data.ID != 1 || created.Data.TaskID != 1 || created.Data.Status != "active" {
+		t.Fatalf("unexpected created sub-task: %+v", created.Data)
+	}
+
+	updateSubTaskResp := doJSON(router, http.MethodPut, "/api/tasks/1/sub-tasks/1", `{"status":"completed"}`, true)
+	if updateSubTaskResp.Code != http.StatusOK {
+		t.Fatalf("update sub-task status = %d, want %d; body = %s", updateSubTaskResp.Code, http.StatusOK, updateSubTaskResp.Body.String())
+	}
+
+	listSubTasksResp := doJSON(router, http.MethodGet, "/api/tasks/1/sub-tasks", "", true)
+	if listSubTasksResp.Code != http.StatusOK {
+		t.Fatalf("list sub-task status = %d, want %d; body = %s", listSubTasksResp.Code, http.StatusOK, listSubTasksResp.Body.String())
+	}
+
+	var listed struct {
+		Data []struct {
+			ID     int64  `json:"id"`
+			Status string `json:"status"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(listSubTasksResp.Body.Bytes(), &listed); err != nil {
+		t.Fatalf("decode list sub-task response: %v", err)
+	}
+	if len(listed.Data) != 2 || listed.Data[0].ID != 1 || listed.Data[0].Status != "completed" {
+		t.Fatalf("unexpected listed sub-tasks: %+v", listed.Data)
+	}
+
+	listTasksResp := doJSON(router, http.MethodGet, "/api/tasks", "", true)
+	if listTasksResp.Code != http.StatusOK {
+		t.Fatalf("list task status = %d, want %d; body = %s", listTasksResp.Code, http.StatusOK, listTasksResp.Body.String())
+	}
+	var listedTasks struct {
+		Data []struct {
+			ID            int64 `json:"id"`
+			SubTasksCount int   `json:"subTasksCount"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(listTasksResp.Body.Bytes(), &listedTasks); err != nil {
+		t.Fatalf("decode list task response: %v", err)
+	}
+	if len(listedTasks.Data) != 1 || listedTasks.Data[0].ID != 1 || listedTasks.Data[0].SubTasksCount != 2 {
+		t.Fatalf("unexpected task sub-task count: %+v", listedTasks.Data)
+	}
+
+	deleteSubTaskResp := doJSON(router, http.MethodDelete, "/api/tasks/1/sub-tasks/1", "", true)
+	if deleteSubTaskResp.Code != http.StatusOK {
+		t.Fatalf("delete sub-task status = %d, want %d; body = %s", deleteSubTaskResp.Code, http.StatusOK, deleteSubTaskResp.Body.String())
+	}
+}
+
 func testRouter() http.Handler {
 	taskRepository := repository.NewTaskRepository()
-	taskService := service.NewTaskService(taskRepository)
+	subTaskRepository := repository.NewSubTaskRepository()
+	taskService := service.NewTaskService(taskRepository, subTaskRepository)
 	taskController := controller.NewTaskController(taskService)
+	subTaskService := service.NewSubTaskService(taskRepository, subTaskRepository)
+	subTaskController := controller.NewSubTaskController(subTaskService)
 
 	authService := service.NewAuthService()
 	authController := controller.NewAuthController(authService)
 
-	return NewRouter(authController, taskController, authService)
+	return NewRouter(authController, taskController, subTaskController, authService)
 }
 
 func doJSON(handler http.Handler, method, path, body string, authenticated bool) *httptest.ResponseRecorder {

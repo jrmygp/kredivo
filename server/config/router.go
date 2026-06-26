@@ -9,7 +9,7 @@ import (
 	"task-management-server/internal/service"
 )
 
-func NewRouter(authController *controller.AuthController, taskController *controller.TaskController, authService service.AuthService) *gin.Engine {
+func NewRouter(authController *controller.AuthController, taskController *controller.TaskController, subTaskController *controller.SubTaskController, authService service.AuthService) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
@@ -27,6 +27,10 @@ func NewRouter(authController *controller.AuthController, taskController *contro
 	task.POST("", taskController.Create)
 	task.PUT("/:id", taskController.Update)
 	task.DELETE("/:id", taskController.Delete)
+	task.GET("/:id/sub-tasks", subTaskController.FindAll)
+	task.POST("/:id/sub-tasks", subTaskController.Create)
+	task.PUT("/:id/sub-tasks/:subTaskID", subTaskController.Update)
+	task.DELETE("/:id/sub-tasks/:subTaskID", subTaskController.Delete)
 
 	return router
 }

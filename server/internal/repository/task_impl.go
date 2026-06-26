@@ -29,21 +29,7 @@ func (r *taskRepository) FindAll(userID, status, searchQuery, sortBy, sortOrder 
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	tasks := make([]model.Task, 0, len(r.tasks))
-	searchQuery = strings.ToLower(strings.TrimSpace(searchQuery))
-	for _, task := range r.tasks {
-		if task.UserID != userID {
-			continue
-		}
-		if status != "" && status != "all" && task.Status != status {
-			continue
-		}
-		if searchQuery != "" && !strings.Contains(strings.ToLower(task.Title), searchQuery) {
-			continue
-		}
-
-		tasks = append(tasks, task)
-	}
+	tasks := r.findAllFilteredLocked(userID, status, searchQuery)
 
 	slices.SortFunc(tasks, func(a, b model.Task) int {
 		result := compareTasks(a, b, sortBy)
@@ -64,6 +50,33 @@ func (r *taskRepository) FindAll(userID, status, searchQuery, sortBy, sortOrder 
 	}
 
 	return tasks[offset:end], totalCount, nil
+}
+
+func (r *taskRepository) FindAllFiltered(userID, status, searchQuery string) ([]model.Task, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	return r.findAllFilteredLocked(userID, status, searchQuery), nil
+}
+
+func (r *taskRepository) findAllFilteredLocked(userID, status, searchQuery string) []model.Task {
+	tasks := make([]model.Task, 0, len(r.tasks))
+	searchQuery = strings.ToLower(strings.TrimSpace(searchQuery))
+	for _, task := range r.tasks {
+		if task.UserID != userID {
+			continue
+		}
+		if status != "" && status != "all" && task.Status != status {
+			continue
+		}
+		if searchQuery != "" && !strings.Contains(strings.ToLower(task.Title), searchQuery) {
+			continue
+		}
+
+		tasks = append(tasks, task)
+	}
+
+	return tasks
 }
 
 func compareTasks(a, b model.Task, sortBy string) int {

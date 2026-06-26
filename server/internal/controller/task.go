@@ -31,6 +31,12 @@ func convertTaskResponse(o model.Task) dto.TaskResponse {
 	}
 }
 
+func convertTaskResponseWithSubTaskCount(o model.Task, subTasks int) dto.TaskResponse {
+	response := convertTaskResponse(o)
+	response.SubTasksCount = subTasks
+	return response
+}
+
 func (h *TaskController) FindAll(c *gin.Context) {
 	searchQuery := c.Query("search")
 	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -57,7 +63,7 @@ func (h *TaskController) FindAll(c *gin.Context) {
 	}
 	if errors.Is(err, service.ErrInvalidTaskSort) {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "sortBy must be title, status, or created and sortOrder must be asc or desc",
+			"error": "sortBy must be title, status, created, or subTasksCount and sortOrder must be asc or desc",
 		})
 		return
 	}
@@ -68,9 +74,15 @@ func (h *TaskController) FindAll(c *gin.Context) {
 		return
 	}
 
+	taskIDs := make([]int64, 0, len(tasks))
+	for _, task := range tasks {
+		taskIDs = append(taskIDs, task.ID)
+	}
+	subTaskCounts := h.service.CountSubTasksByTaskIDs(userIDFromContext(c), taskIDs)
+
 	taskResponses := make([]dto.TaskResponse, 0, len(tasks))
 	for _, task := range tasks {
-		taskResponses = append(taskResponses, convertTaskResponse(task))
+		taskResponses = append(taskResponses, convertTaskResponseWithSubTaskCount(task, subTaskCounts[task.ID]))
 	}
 
 	webResponse := dto.PaginationResponse{
@@ -204,6 +216,19 @@ func idParam(c *gin.Context) (int64, bool) {
 	if err != nil || ID < 1 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid ID format",
+		})
+		return 0, false
+	}
+
+	return ID, true
+}
+
+func subTaskIDParam(c *gin.Context) (int64, bool) {
+	idParam := c.Param("subTaskID")
+	ID, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil || ID < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid sub-task ID format",
 		})
 		return 0, false
 	}

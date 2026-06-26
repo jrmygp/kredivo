@@ -3,6 +3,7 @@
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
+import SubTaskModal from "@/components/tasks/SubTaskModal";
 import TaskTableView from "@/components/tasks/TaskTableView";
 import { useCreateTask, useDeleteTask, useTasks, useUpdateTask } from "@/features/tasks/hooks/useTasks";
 import type { Task, TaskFilter, TaskSortBy, TaskSortOrder, TaskStatus } from "@/features/tasks/types";
@@ -31,14 +32,22 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
   const [sortDirections, setSortDirections] = useState<Record<TaskSortBy, TaskSortOrder>>({
     title: "asc",
     status: "asc",
+    subTasksCount: "asc",
     created: "desc",
   });
   const [modalMode, setModalMode] = useState<"add" | "edit" | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedSubTaskParent, setSelectedSubTaskParent] = useState<Task | null>(null);
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<TaskStatus>("active");
 
-  const tasksQuery = useTasks({ status: filter, search: debouncedSearch, page, sortBy, sortOrder: sortDirections[sortBy] });
+  const tasksQuery = useTasks({
+    status: filter,
+    search: debouncedSearch,
+    page,
+    sortBy,
+    sortOrder: sortDirections[sortBy],
+  });
   const createTaskMutation = useCreateTask();
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
@@ -72,6 +81,14 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
     setTitle(task.title);
     setStatus(task.status);
     setModalMode("edit");
+  };
+
+  const openSubTaskModal = (task: Task) => {
+    setSelectedSubTaskParent(task);
+  };
+
+  const closeSubTaskModal = () => {
+    setSelectedSubTaskParent(null);
   };
 
   const closeModal = () => {
@@ -191,6 +208,7 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
             onPageChange={setPage}
             onSortChange={handleSortChange}
             onEdit={openEditModal}
+            onSubTasks={openSubTaskModal}
             onDelete={handleDeleteTask}
             openAddModal={openAddModal}
           />
@@ -256,6 +274,8 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
           </div>
         </div>
       ) : null}
+
+      {selectedSubTaskParent ? <SubTaskModal task={selectedSubTaskParent} onClose={closeSubTaskModal} /> : null}
     </main>
   );
 };

@@ -19,12 +19,22 @@ export type TaskStatus = "active" | "completed";
 
 export type TaskFilter = "all" | TaskStatus;
 
-export type TaskSortBy = "title" | "status" | "created";
+export type TaskSortBy = "title" | "status" | "subTasksCount" | "created";
 
 export type TaskSortOrder = "asc" | "desc";
 
 export type Task = {
   id: number;
+  title: string;
+  status: TaskStatus;
+  subTasksCount: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SubTask = {
+  id: number;
+  task_id: number;
   title: string;
   status: TaskStatus;
   created_at: string;
@@ -39,6 +49,23 @@ export type UpdateTaskPayload = {
   id: number;
   title?: string;
   status?: TaskStatus;
+};
+
+export type CreateSubTaskPayload = {
+  taskId: number;
+  title: string;
+};
+
+export type UpdateSubTaskPayload = {
+  taskId: number;
+  id: number;
+  title?: string;
+  status?: TaskStatus;
+};
+
+export type DeleteSubTaskPayload = {
+  taskId: number;
+  id: number;
 };
 
 export type GetTasksParams = {
