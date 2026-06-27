@@ -191,7 +191,7 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
         </header>
 
         {tasksQuery.isLoading ? (
-          <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-600">Memuat task...</div>
+          <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-600">Loading task...</div>
         ) : null}
 
         {tasksQuery.isError ? (
