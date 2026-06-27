@@ -1,9 +1,9 @@
 package main
 
 import (
-	"task-management-server/config"
 	"task-management-server/internal/controller"
 	"task-management-server/internal/repository"
+	"task-management-server/internal/router"
 	"task-management-server/internal/service"
 )
 
@@ -18,7 +18,7 @@ func main() {
 	authService := service.NewAuthService()
 	authController := controller.NewAuthController(authService)
 
-	router := config.NewRouter(authController, taskController, subTaskController, authService)
+	router := router.NewRouter(authController, taskController, subTaskController, authService)
 
 	router.Run(":8080")
 }
