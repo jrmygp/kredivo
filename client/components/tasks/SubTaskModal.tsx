@@ -23,7 +23,6 @@ export default function SubTaskModal({ task, onClose }: SubTaskModalProps) {
             type="button"
             onClick={onClose}
             className="rounded-md px-2 py-1 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-            aria-label="Close modal"
           >
             <IoMdClose />
           </button>

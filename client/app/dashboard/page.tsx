@@ -174,17 +174,16 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <h1 className="mt-2 text-3xl font-bold tracking-normal">My Tasks</h1>
 
-          <div className="flex gap-3 items-center">
+          <div className="flex w-full items-center gap-3 sm:w-auto sm:justify-end">
             <button
               type="button"
-              aria-label="Open task statistics"
-              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full focus:outline-none focus:ring-4 focus:ring-emerald-100"
+              className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100"
               onClick={() => router.push("/statistic")}
             >
-              <Image src={avatar} alt="avatar" className="h-full w-full rounded-full object-contain" />
+              <Image src={avatar} alt="avatar" width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
             </button>
 
-            <Button color="danger" className="sm:w-auto sm:px-5" onClick={handleLogout}>
+            <Button color="danger" className="!w-auto min-w-24 px-5" onClick={handleLogout}>
               Logout
             </Button>
           </div>
@@ -236,7 +235,6 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
                 type="button"
                 onClick={closeModal}
                 className="rounded-md px-2 py-1 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-                aria-label="Close modal"
               >
                 <IoMdClose />
               </button>

@@ -128,15 +128,10 @@ export default function SubTaskList({ taskId }: SubTaskListProps) {
                   />
 
                   <div className="flex shrink-0 gap-2">
-                    <Button
-                      variant="icon"
-                      aria-label="Save sub-task"
-                      disabled={isSaving || !editTitle.trim()}
-                      onClick={handleUpdate}
-                    >
+                    <Button variant="icon" disabled={isSaving || !editTitle.trim()} onClick={handleUpdate}>
                       <MdCheck className="text-lg" />
                     </Button>
-                    <Button variant="icon" color="danger" aria-label="Cancel edit sub-task" onClick={cancelEdit}>
+                    <Button variant="icon" color="danger" onClick={cancelEdit}>
                       <MdClose className="text-lg" />
                     </Button>
                   </div>
@@ -167,14 +162,13 @@ export default function SubTaskList({ taskId }: SubTaskListProps) {
                   </button>
 
                   <div className="flex gap-2">
-                    <Button variant="icon" aria-label="Edit sub-task" onClick={() => startEdit(subTask)}>
+                    <Button variant="icon" onClick={() => startEdit(subTask)}>
                       <MdEdit className="text-lg" />
                     </Button>
 
                     <Button
                       variant="icon"
                       color="danger"
-                      aria-label="Delete sub-task"
                       disabled={deleteSubTaskMutation.isPending}
                       onClick={() => handleDelete(subTask)}
                     >

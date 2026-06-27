@@ -69,18 +69,19 @@ export default function StatisticPage() {
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-500">Statistic</p>
             <h1 className="mt-2 text-3xl font-bold tracking-normal">Task Overview</h1>
           </div>
 
-          <Button variant="outlined" color="secondary" className="sm:w-auto sm:px-5" onClick={() => router.push("/dashboard")}>
+          <Button variant="contained" className="sm:w-auto sm:px-5" onClick={() => router.push("/dashboard")}>
             <MdArrowBack className="mr-2 text-lg" />
             Dashboard
           </Button>
         </header>
 
         {statsQuery.isLoading ? (
-          <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-600">Memuat statistik...</div>
+          <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-600">
+            Memuat statistik...
+          </div>
         ) : null}
 
         {statsQuery.isError ? (

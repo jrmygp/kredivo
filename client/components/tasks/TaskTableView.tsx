@@ -182,24 +182,13 @@ export default function TaskTableView({
                 <td className="px-4 py-4 text-slate-500">{new Date(task.created_at).toLocaleDateString("id-ID")}</td>
                 <td className="px-4 py-4">
                   <div className="flex justify-end gap-2">
-                    <Button variant="icon" aria-label="Edit task" onClick={() => onEdit(task)}>
+                    <Button variant="icon" onClick={() => onEdit(task)}>
                       <MdModeEdit className="text-lg" />
                     </Button>
-                    <Button
-                      variant="icon"
-                      color="secondary"
-                      aria-label="Manage sub-tasks"
-                      onClick={() => onSubTasks(task)}
-                    >
+                    <Button variant="icon" color="secondary" onClick={() => onSubTasks(task)}>
                       <MdChecklist className="text-lg" />
                     </Button>
-                    <Button
-                      variant="icon"
-                      color="danger"
-                      aria-label="Delete task"
-                      disabled={isDeleting}
-                      onClick={() => onDelete(task)}
-                    >
+                    <Button variant="icon" color="danger" disabled={isDeleting} onClick={() => onDelete(task)}>
                       <MdOutlineDeleteOutline className="text-lg" />
                     </Button>
                   </div>
@@ -218,13 +207,7 @@ export default function TaskTableView({
         <p>{totalCount > 0 ? `Showing ${firstRow}-${lastRow} of ${totalCount} tasks` : "Showing 0 tasks"}</p>
 
         <div className="flex items-center gap-1 overflow-x-auto">
-          <Button
-            type="button"
-            variant="icon"
-            aria-label="Previous page"
-            disabled={!canGoPrevious}
-            onClick={() => onPageChange(page - 1)}
-          >
+          <Button type="button" variant="icon" disabled={!canGoPrevious} onClick={() => onPageChange(page - 1)}>
             <MdChevronLeft className="text-xl" />
           </Button>
 
@@ -249,13 +232,7 @@ export default function TaskTableView({
             ),
           )}
 
-          <Button
-            type="button"
-            variant="icon"
-            aria-label="Next page"
-            disabled={!canGoNext}
-            onClick={() => onPageChange(page + 1)}
-          >
+          <Button type="button" variant="icon" disabled={!canGoNext} onClick={() => onPageChange(page + 1)}>
             <MdChevronRight className="text-xl" />
           </Button>
         </div>
