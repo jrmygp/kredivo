@@ -56,7 +56,7 @@ export default function Button({
   return (
     <button
       type={type}
-      className={`flex shrink-0 items-center justify-center text-sm font-semibold transition focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60 ${radiusClassName[variant]} ${sizeClassName[variant]} ${variantClassName[variant][color]} ${className}`}
+      className={`flex shrink-0 items-center justify-center text-sm font-semibold transition focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer ${radiusClassName[variant]} ${sizeClassName[variant]} ${variantClassName[variant][color]} ${className}`}
       {...props}
     >
       {children}

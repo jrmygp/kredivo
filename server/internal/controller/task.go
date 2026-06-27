@@ -96,6 +96,16 @@ func (h *TaskController) FindAll(c *gin.Context) {
 	c.JSON(http.StatusOK, webResponse)
 }
 
+func (h *TaskController) Stats(c *gin.Context) {
+	webResponse := dto.Response{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   h.service.Stats(userIDFromContext(c)),
+	}
+
+	c.JSON(http.StatusOK, webResponse)
+}
+
 func (h *TaskController) Create(c *gin.Context) {
 	var taskForm dto.CreateTaskRequest
 

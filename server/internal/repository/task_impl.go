@@ -59,6 +59,31 @@ func (r *taskRepository) FindAllFiltered(userID, status, searchQuery string) ([]
 	return r.findAllFilteredLocked(userID, status, searchQuery), nil
 }
 
+func (r *taskRepository) Stats(userID string) (int, int, int) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	totalTasks := 0
+	activeTasks := 0
+	completedTasks := 0
+
+	for _, task := range r.tasks {
+		if task.UserID != userID {
+			continue
+		}
+
+		totalTasks++
+		switch task.Status {
+		case model.TaskStatusActive:
+			activeTasks++
+		case model.TaskStatusCompleted:
+			completedTasks++
+		}
+	}
+
+	return totalTasks, activeTasks, completedTasks
+}
+
 func (r *taskRepository) findAllFilteredLocked(userID, status, searchQuery string) []model.Task {
 	tasks := make([]model.Task, 0, len(r.tasks))
 	searchQuery = strings.ToLower(strings.TrimSpace(searchQuery))

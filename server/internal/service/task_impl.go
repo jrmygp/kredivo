@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"math"
 	"strings"
 
 	"task-management-server/internal/dto"
@@ -96,6 +97,23 @@ func paginationMetadata(rowCount int, totalCount int64, offset, pageSize int) (i
 
 func paginationTotalPages(totalCount int64, pageSize int) int {
 	return (int(totalCount) + pageSize - 1) / pageSize
+}
+
+func (s *taskService) Stats(userID string) dto.TaskStatsResponse {
+	totalTasks, activeTasks, completedTasks := s.repository.Stats(userID)
+	completionRate := 0.0
+	if totalTasks > 0 {
+		completionRate = (float64(completedTasks) / float64(totalTasks)) * 100
+		completionRate = math.Round(completionRate*100) / 100
+	}
+
+	return dto.TaskStatsResponse{
+		UserID:         userID,
+		TotalTasks:     totalTasks,
+		ActiveTasks:    activeTasks,
+		CompletedTasks: completedTasks,
+		CompletionRate: completionRate,
+	}
 }
 
 func (s *taskService) Create(userID string, taskForm dto.CreateTaskRequest) (model.Task, error) {

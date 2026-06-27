@@ -37,6 +37,14 @@ type UpdateSubTaskRequest struct {
 	Status *string `json:"status"`
 }
 
+type TaskStatsResponse struct {
+	UserID         string  `json:"userId"`
+	TotalTasks     int     `json:"totalTasks"`
+	ActiveTasks    int     `json:"activeTasks"`
+	CompletedTasks int     `json:"completedTasks"`
+	CompletionRate float64 `json:"completionRate"`
+}
+
 type TaskResponse struct {
 	ID        int64     `json:"id"`
 	Title     string    `json:"title"`

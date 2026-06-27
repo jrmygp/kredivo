@@ -65,4 +65,4 @@ This app uses dummy authentication. You can login with any username and password
 - Filter tasks by status
 - Search tasks by title
 - Paginated task table
-- CRUD sub tasks
+- CRUD sub-tasks

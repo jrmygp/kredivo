@@ -20,6 +20,7 @@ func NewRouter(authController *controller.AuthController, taskController *contro
 
 	api := router.Group("/api")
 	api.POST("/login", authController.Login)
+	api.GET("/stats", middleware.RequireAuth(authService), taskController.Stats)
 
 	task := api.Group("/tasks")
 	task.Use(middleware.RequireAuth(authService))

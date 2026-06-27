@@ -10,9 +10,11 @@ import type { Task, TaskFilter, TaskSortBy, TaskSortOrder, TaskStatus } from "@/
 import { useSnackbar } from "notistack";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { mapDispatchToProps, mapStateToProps } from "@/redux";
 import { connect } from "react-redux";
 import { IoMdClose } from "react-icons/io";
+import avatar from "@/public/avatar.png";
 
 const statusOptions: Array<{ value: TaskStatus; label: string }> = [
   { value: "active", label: "Active" },
@@ -170,13 +172,22 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
     <main className="min-h-screen bg-slate-100 px-4 py-6 text-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h1 className="mt-2 text-3xl font-bold tracking-normal">My Tasks</h1>
-          </div>
+          <h1 className="mt-2 text-3xl font-bold tracking-normal">My Tasks</h1>
 
-          <Button color="danger" className="sm:w-auto sm:px-5" onClick={handleLogout}>
-            Logout
-          </Button>
+          <div className="flex gap-3 items-center">
+            <button
+              type="button"
+              aria-label="Open task statistics"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full focus:outline-none focus:ring-4 focus:ring-emerald-100"
+              onClick={() => router.push("/statistic")}
+            >
+              <Image src={avatar} alt="avatar" className="h-full w-full rounded-full object-contain" />
+            </button>
+
+            <Button color="danger" className="sm:w-auto sm:px-5" onClick={handleLogout}>
+              Logout
+            </Button>
+          </div>
         </header>
 
         {tasksQuery.isLoading ? (

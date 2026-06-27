@@ -100,6 +100,42 @@ func TestTaskRoutesRequireAuth(t *testing.T) {
 	}
 }
 
+func TestStatsFlow(t *testing.T) {
+	router := testRouter()
+
+	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"Active one"}`, true)
+	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"Active two"}`, true)
+	doJSON(router, http.MethodPost, "/api/tasks", `{"title":"Completed one"}`, true)
+	doJSON(router, http.MethodPut, "/api/tasks/3", `{"status":"completed"}`, true)
+
+	statsResp := doJSON(router, http.MethodGet, "/api/stats", "", true)
+	if statsResp.Code != http.StatusOK {
+		t.Fatalf("stats status = %d, want %d; body = %s", statsResp.Code, http.StatusOK, statsResp.Body.String())
+	}
+
+	var stats struct {
+		Data struct {
+			UserID         string  `json:"userId"`
+			TotalTasks     int     `json:"totalTasks"`
+			ActiveTasks    int     `json:"activeTasks"`
+			CompletedTasks int     `json:"completedTasks"`
+			CompletionRate float64 `json:"completionRate"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(statsResp.Body.Bytes(), &stats); err != nil {
+		t.Fatalf("decode stats response: %v", err)
+	}
+	if stats.Data.UserID != service.DemoUserID {
+		t.Fatalf("unexpected stats user ID: %s", stats.Data.UserID)
+	}
+	if stats.Data.TotalTasks != 3 || stats.Data.ActiveTasks != 2 || stats.Data.CompletedTasks != 1 {
+		t.Fatalf("unexpected stats counts: %+v", stats.Data)
+	}
+	if stats.Data.CompletionRate != 33.33 {
+		t.Fatalf("unexpected completion rate: got %v, want 33.33", stats.Data.CompletionRate)
+	}
+}
+
 func TestTaskFindAllSorting(t *testing.T) {
 	router := testRouter()
 

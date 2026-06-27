@@ -7,6 +7,7 @@ import (
 
 type TaskService interface {
 	FindAll(userID, status, searchQuery, sortBy, sortOrder string, page int) ([]model.Task, int64, int, int, int, error)
+	Stats(userID string) dto.TaskStatsResponse
 	Create(userID string, task dto.CreateTaskRequest) (model.Task, error)
 	Update(userID string, id int64, task dto.UpdateTaskRequest) (model.Task, error)
 	Delete(userID string, id int64) (model.Task, error)
