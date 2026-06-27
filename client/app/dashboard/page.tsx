@@ -183,8 +183,8 @@ const DashboardPage = ({ handleResetState }: DashboardPageProps) => {
               <Image src={avatar} alt="avatar" width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
             </button>
 
-            <Button color="danger" className="!w-auto min-w-24 px-5" onClick={handleLogout}>
-              Logout
+            <Button color="danger" className="w-auto! min-w-24 px-5" onClick={handleLogout}>
+              Log Out
             </Button>
           </div>
         </header>
